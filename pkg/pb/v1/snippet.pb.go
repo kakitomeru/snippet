@@ -882,7 +882,7 @@ const file_v1_snippet_proto_rawDesc = "" +
 	"\x0eListMySnippets\x12!.snippet.v1.ListMySnippetsRequest\x1a\".snippet.v1.ListMySnippetsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/me/snippets\x12}\n" +
 	"\x12ListPublicSnippets\x12%.snippet.v1.ListPublicSnippetsRequest\x1a&.snippet.v1.ListPublicSnippetsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/api/v1/snippets\x12v\n" +
 	"\rUpdateSnippet\x12 .snippet.v1.UpdateSnippetRequest\x1a!.snippet.v1.UpdateSnippetResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*2\x15/api/v1/snippets/{id}\x12h\n" +
-	"\rDeleteSnippet\x12 .snippet.v1.DeleteSnippetRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/api/v1/snippets/{id}B\"Z github.com/kakitomeru/snippet/pkg/pb/v1;snippetpbb\x06proto3"
+	"\rDeleteSnippet\x12 .snippet.v1.DeleteSnippetRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/api/v1/snippets/{id}B3Z1github.com/kakitomeru/snippet/pkg/pb/v1;snippetpbb\x06proto3"
 
 var (
 	file_v1_snippet_proto_rawDescOnce sync.Once
