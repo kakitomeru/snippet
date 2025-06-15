@@ -27,7 +27,7 @@ const (
 type Snippet struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OwnerId       string                 `protobuf:"bytes,2,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	LanguageHint  string                 `protobuf:"bytes,5,opt,name=language_hint,json=languageHint,proto3" json:"language_hint,omitempty"`
@@ -76,9 +76,9 @@ func (x *Snippet) GetId() string {
 	return ""
 }
 
-func (x *Snippet) GetUserId() string {
+func (x *Snippet) GetOwnerId() string {
 	if x != nil {
-		return x.UserId
+		return x.OwnerId
 	}
 	return ""
 }
@@ -801,10 +801,10 @@ var File_v1_snippet_proto protoreflect.FileDescriptor
 const file_v1_snippet_proto_rawDesc = "" +
 	"\n" +
 	"\x10v1/snippet.proto\x12\n" +
-	"snippet.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\"\xae\x02\n" +
+	"snippet.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\"\xb0\x02\n" +
 	"\aSnippet\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12#\n" +
 	"\rlanguage_hint\x18\x05 \x01(\tR\flanguageHint\x12\x1b\n" +

@@ -10,6 +10,7 @@ import (
 
 	"github.com/kakitomeru/shared/env"
 	"github.com/kakitomeru/shared/interceptor"
+	"github.com/kakitomeru/shared/logger"
 	"github.com/kakitomeru/shared/telemetry"
 	"github.com/kakitomeru/snippet/internal/api"
 	"github.com/kakitomeru/snippet/internal/config"
@@ -36,27 +37,31 @@ func NewApp(db *gorm.DB, cfg *config.Config) *App {
 	}
 }
 
-func (a *App) Start(ctx context.Context) error {
+func (a *App) Start(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	shutdownTracer, err := telemetry.NewTracerProvider(ctx, a.cfg.Name, env.GetOtelCollector())
 	if err != nil {
-		log.Fatalf("failed to create tracer provider: %v", err)
+		logger.Error(ctx, "failed to create tracer provider", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := shutdownTracer(ctx); err != nil {
-			log.Printf("failed to shutdown tracer provider: %v", err)
+			logger.Error(ctx, "failed to shutdown tracer provider", err)
+			os.Exit(1)
 		}
 	}()
 
 	shutdownMeter, err := telemetry.NewMeterProvider(ctx, a.cfg.Name, env.GetOtelCollector())
 	if err != nil {
-		log.Fatalf("failed to create meter provider: %v", err)
+		logger.Error(ctx, "failed to create meter provider", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := shutdownMeter(ctx); err != nil {
-			log.Printf("failed to shutdown meter provider: %v", err)
+			logger.Error(ctx, "failed to shutdown meter provider", err)
+			os.Exit(1)
 		}
 	}()
 	// metric.Init()
@@ -83,32 +88,32 @@ func (a *App) Start(ctx context.Context) error {
 	go func() {
 		lis, err := net.Listen("tcp", ":"+a.port)
 		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
+			logger.Error(ctx, "failed to listen", err)
+			os.Exit(1)
 		}
 
 		log.Printf("Starting gRPC server on port %s", a.port)
 		if err := a.server.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+			logger.Error(ctx, "failed to serve", err)
+			os.Exit(1)
 		}
 	}()
 
-	return a.GracefulShutdown(ctx)
+	a.GracefulShutdown(ctx)
 }
 
-func (a *App) GracefulShutdown(ctx context.Context) error {
+func (a *App) GracefulShutdown(ctx context.Context) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	select {
 	case <-ctx.Done():
-		log.Println("Shutdown requested via context")
+		logger.Debug(ctx, "Shutdown requested via context")
 	case <-quit:
-		log.Println("Shutdown requested via signal")
+		logger.Debug(ctx, "Shutdown requested via signal")
 	}
 
-	log.Println("Shutting down gRPC server...")
+	logger.Debug(ctx, "Shutting down gRPC server...")
 	a.server.GracefulStop()
-	log.Println("Server gracefully stopped")
-
-	return nil
+	logger.Info(ctx, "Server gracefully stopped")
 }

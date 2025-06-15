@@ -2,40 +2,47 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/kakitomeru/shared/database"
 	"github.com/kakitomeru/shared/env"
+	"github.com/kakitomeru/shared/logger"
 	. "github.com/kakitomeru/snippet/internal/app"
 	"github.com/kakitomeru/snippet/internal/config"
 	"github.com/kakitomeru/snippet/internal/model"
 )
 
 func main() {
+	logger.InitSlog("snippet", "dev", slog.LevelDebug)
+	ctx := context.Background()
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("failed to load snippet config: %v", err)
+		logger.Error(ctx, "failed to load snippet config", err)
+		os.Exit(1)
 	}
 
 	if err := env.LoadEnv(cfg.Env); err != nil {
-		log.Fatal(err.Error())
+		logger.Error(ctx, "failed to load env", err)
+		os.Exit(1)
 	}
 
+	logger.Debug(ctx, "Connecting to database")
 	db, err := database.ConnectDatabase()
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Error(ctx, "failed to connect to database", err)
+		os.Exit(1)
 	}
 
-	log.Println("Running migration for table snippet")
+	logger.Debug(ctx, "Running migration for table snippet")
 	if err = database.Migrate(db, model.Snippet{}); err != nil {
-		log.Fatal(err.Error())
+		logger.Error(ctx, "failed to run migration", err)
+		os.Exit(1)
 	}
 
-	log.Println("Starting app")
+	logger.Debug(ctx, "Starting app")
 	app := NewApp(db, cfg)
-	ctx := context.Background()
 
-	if err := app.Start(ctx); err != nil {
-		log.Fatal(err.Error())
-	}
+	app.Start(ctx)
 }

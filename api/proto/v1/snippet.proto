@@ -50,7 +50,7 @@ service SnippetService {
 
 message Snippet {
   string id = 1;
-  string user_id = 2;
+  string owner_id = 2;
   string title = 3;
   string content = 4;
   string language_hint = 5;

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,8 +48,6 @@ func (r *snippetRepository) Create(
 	snippet.ID = uuid.New()
 	snippet.CreatedAt = time.Now()
 	snippet.UpdatedAt = time.Now()
-
-	fmt.Println("snippet", snippet)
 
 	if err := r.db.Create(snippet).Error; err != nil {
 		return nil, err

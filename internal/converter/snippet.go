@@ -9,6 +9,7 @@ import (
 func ToPbSnippet(snippet *model.Snippet) *pb.Snippet {
 	return &pb.Snippet{
 		Id:           snippet.ID.String(),
+		OwnerId:      snippet.OwnerID.String(),
 		Title:        snippet.Title,
 		Content:      snippet.Content,
 		LanguageHint: snippet.LanguageHint,
