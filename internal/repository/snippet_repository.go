@@ -16,11 +16,11 @@ var ErrSnippetNotFound = errors.New("snippet not found")
 type SnippetRepository interface {
 	Create(ctx context.Context, snippet *model.Snippet) (*uuid.UUID, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Snippet, error)
-	List(
+	ListPublic(
 		ctx context.Context,
 		pagination pagination.Pagination,
 	) ([]*model.Snippet, int64, error)
-	ListExcludeOwnerID(
+	ListPublicExcludeOwnerID(
 		ctx context.Context,
 		pagination pagination.Pagination,
 		userID uuid.UUID,
@@ -78,7 +78,7 @@ func (r *snippetRepository) GetByID(
 	return &snippet, nil
 }
 
-func (r *snippetRepository) List(
+func (r *snippetRepository) ListPublic(
 	ctx context.Context,
 	pagination pagination.Pagination,
 ) ([]*model.Snippet, int64, error) {
@@ -108,7 +108,7 @@ func (r *snippetRepository) List(
 	return snippets, total, nil
 }
 
-func (r *snippetRepository) ListExcludeOwnerID(
+func (r *snippetRepository) ListPublicExcludeOwnerID(
 	ctx context.Context,
 	pagination pagination.Pagination,
 	userID uuid.UUID,

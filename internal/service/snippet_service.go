@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/kakitomeru/shared/interceptor"
@@ -23,17 +22,17 @@ type SnippetService interface {
 		isPublic bool,
 		tags []string,
 	) (*uuid.UUID, error)
-	GetSnippet(
+	Get(
 		ctx context.Context,
 		id uuid.UUID,
 	) (*model.Snippet, error)
-	List(
+	ListPublic(
 		ctx context.Context,
 		pagination pagination.Pagination,
-		ownerID string,
+		ownerID *uuid.UUID,
 		excludeMine bool,
 	) ([]*model.Snippet, int64, error)
-	ListByOwnerID(
+	ListMine(
 		ctx context.Context,
 		pagination pagination.Pagination,
 	) ([]*model.Snippet, int64, error)
@@ -76,7 +75,7 @@ func (s *snippetService) Create(
 	return id, nil
 }
 
-func (s *snippetService) GetSnippet(
+func (s *snippetService) Get(
 	ctx context.Context,
 	id uuid.UUID,
 ) (*model.Snippet, error) {
@@ -94,37 +93,35 @@ func (s *snippetService) GetSnippet(
 	return snippet, nil
 }
 
-func (s *snippetService) List(
+func (s *snippetService) ListPublic(
 	ctx context.Context,
 	pagination pagination.Pagination,
-	ownerID string,
+	ownerID *uuid.UUID,
 	excludeMine bool,
 ) ([]*model.Snippet, int64, error) {
 	userID := interceptor.GetUserID(ctx)
 
-	if ownerID != "" {
-		ownerID, err := uuid.Parse(ownerID)
-		if err != nil {
-			return nil, 0, err
+	if ownerID != nil {
+		if *ownerID == userID && excludeMine {
+			return []*model.Snippet{}, 0, nil
 		}
 
-		snippets, total, err := s.repo.Snippet.ListByOwnerID(ctx, ownerID, pagination, true)
+		snippets, total, err := s.repo.Snippet.ListByOwnerID(ctx, *ownerID, pagination, true)
 		if err != nil {
 			return nil, total, err
 		}
 		return snippets, total, nil
 	}
 
-	fmt.Println("excludeMine", excludeMine)
 	if excludeMine {
-		snippets, total, err := s.repo.Snippet.ListExcludeOwnerID(ctx, pagination, userID)
+		snippets, total, err := s.repo.Snippet.ListPublicExcludeOwnerID(ctx, pagination, userID)
 		if err != nil {
 			return nil, total, err
 		}
 		return snippets, total, nil
 	}
 
-	snippets, total, err := s.repo.Snippet.List(ctx, pagination)
+	snippets, total, err := s.repo.Snippet.ListPublic(ctx, pagination)
 	if err != nil {
 		return nil, total, err
 	}
@@ -132,7 +129,7 @@ func (s *snippetService) List(
 	return snippets, total, nil
 }
 
-func (s *snippetService) ListByOwnerID(
+func (s *snippetService) ListMine(
 	ctx context.Context,
 	pagination pagination.Pagination,
 ) ([]*model.Snippet, int64, error) {

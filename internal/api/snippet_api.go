@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/kakitomeru/shared/pagination"
@@ -71,7 +72,7 @@ func (h *SnippetServiceHandler) GetSnippet(
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id")
 	}
 
-	snippet, err := h.service.Snippet.GetSnippet(ctx, id)
+	snippet, err := h.service.Snippet.Get(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, repository.ErrSnippetNotFound):
@@ -107,7 +108,7 @@ func (h *SnippetServiceHandler) ListMySnippets(
 		Size: size,
 	}
 
-	snippets, total, err := h.service.Snippet.ListByOwnerID(ctx, pagination)
+	snippets, total, err := h.service.Snippet.ListMine(ctx, pagination)
 	if err != nil {
 		return nil, s.StatusInternal
 	}
@@ -146,12 +147,16 @@ func (h *SnippetServiceHandler) ListPublicSnippets(
 		excludeMine = *req.ExcludeMine
 	}
 
-	ownerID := ""
+	var ownerID *uuid.UUID
 	if req.OwnerId != nil {
-		ownerID = *req.OwnerId
+		parsedOwnerID, err := uuid.Parse(*req.OwnerId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid owner id")
+		}
+		ownerID = &parsedOwnerID
 	}
 
-	snippets, total, err := h.service.Snippet.List(ctx, pagination, ownerID, excludeMine)
+	snippets, total, err := h.service.Snippet.ListPublic(ctx, pagination, ownerID, excludeMine)
 	if err != nil {
 		return nil, s.StatusInternal
 	}
@@ -171,7 +176,54 @@ func (h *SnippetServiceHandler) UpdateSnippet(
 	ctx context.Context,
 	req *pb.UpdateSnippetRequest,
 ) (*pb.UpdateSnippetResponse, error) {
-	panic("not implemented")
+	if req.Id == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "id is required")
+	}
+
+	id, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid id")
+	}
+
+	title := ""
+	if req.Title != nil {
+		title = *req.Title
+	}
+
+	content := ""
+	if req.Content != nil {
+		content = *req.Content
+	}
+
+	languageHint := ""
+	if req.LanguageHint != nil {
+		languageHint = *req.LanguageHint
+	}
+
+	var isPublic *bool
+	if req.IsPublic != nil {
+		isPublic = req.IsPublic
+	}
+
+	var tags *[]string
+	if req.Tags != nil {
+		tags = &req.Tags
+	}
+
+	fmt.Println(title, content, languageHint, isPublic, tags, req.Tags)
+	fmt.Println("title", req.Title)
+	fmt.Println("content", req.Content)
+	fmt.Println("languageHint", req.LanguageHint)
+	fmt.Println("isPublic", req.IsPublic)
+	fmt.Println("tags", req.Tags)
+
+	// h.service.Snippet.Update(ctx, id, title, content, languageHint, isPublic, tags)
+
+	return &pb.UpdateSnippetResponse{
+		Snippet: &pb.Snippet{
+			Id: id.String(),
+		},
+	}, nil
 }
 
 func (h *SnippetServiceHandler) DeleteSnippet(

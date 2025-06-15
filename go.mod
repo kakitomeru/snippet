@@ -3,12 +3,10 @@ module github.com/kakitomeru/snippet
 go 1.24.3
 
 require (
-	github.com/fatih/color v1.18.0
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/kakitomeru/shared v0.0.0-20250615105820-f66c19810bca
 	github.com/lib/pq v1.10.9
-	go.opentelemetry.io/otel/trace v1.36.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
@@ -21,6 +19,7 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.23.2 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -51,6 +50,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.36.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
+	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.6.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/net v0.40.0 // indirect

@@ -635,11 +635,12 @@ func (x *ListPublicSnippetsResponse) GetPagination() *PaginationResponse {
 type UpdateSnippetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         *string                `protobuf:"bytes,2,opt,name=title,proto3,oneof" json:"title,omitempty"`
-	Content       *string                `protobuf:"bytes,3,opt,name=content,proto3,oneof" json:"content,omitempty"`
-	LanguageHint  *string                `protobuf:"bytes,4,opt,name=language_hint,json=languageHint,proto3,oneof" json:"language_hint,omitempty"`
-	IsPublic      *bool                  `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
-	Tags          []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
+	TagsUpdated   bool                   `protobuf:"varint,2,opt,name=tags_updated,json=tagsUpdated,proto3" json:"tags_updated,omitempty"`
+	Title         *string                `protobuf:"bytes,3,opt,name=title,proto3,oneof" json:"title,omitempty"`
+	Content       *string                `protobuf:"bytes,4,opt,name=content,proto3,oneof" json:"content,omitempty"`
+	LanguageHint  *string                `protobuf:"bytes,5,opt,name=language_hint,json=languageHint,proto3,oneof" json:"language_hint,omitempty"`
+	IsPublic      *bool                  `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
+	Tags          []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -679,6 +680,13 @@ func (x *UpdateSnippetRequest) GetId() string {
 		return x.Id
 	}
 	return ""
+}
+
+func (x *UpdateSnippetRequest) GetTagsUpdated() bool {
+	if x != nil {
+		return x.TagsUpdated
+	}
+	return false
 }
 
 func (x *UpdateSnippetRequest) GetTitle() string {
@@ -867,14 +875,15 @@ const file_v1_snippet_proto_rawDesc = "" +
 	"\bsnippets\x18\x01 \x03(\v2\x13.snippet.v1.SnippetR\bsnippets\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.snippet.v1.PaginationResponseR\n" +
-	"pagination\"\xf6\x01\n" +
+	"pagination\"\x99\x02\n" +
 	"\x14UpdateSnippetRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
-	"\x05title\x18\x02 \x01(\tH\x00R\x05title\x88\x01\x01\x12\x1d\n" +
-	"\acontent\x18\x03 \x01(\tH\x01R\acontent\x88\x01\x01\x12(\n" +
-	"\rlanguage_hint\x18\x04 \x01(\tH\x02R\flanguageHint\x88\x01\x01\x12 \n" +
-	"\tis_public\x18\x05 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12\x12\n" +
-	"\x04tags\x18\x06 \x03(\tR\x04tagsB\b\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\ftags_updated\x18\x02 \x01(\bR\vtagsUpdated\x12\x19\n" +
+	"\x05title\x18\x03 \x01(\tH\x00R\x05title\x88\x01\x01\x12\x1d\n" +
+	"\acontent\x18\x04 \x01(\tH\x01R\acontent\x88\x01\x01\x12(\n" +
+	"\rlanguage_hint\x18\x05 \x01(\tH\x02R\flanguageHint\x88\x01\x01\x12 \n" +
+	"\tis_public\x18\x06 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12\x12\n" +
+	"\x04tags\x18\a \x03(\tR\x04tagsB\b\n" +
 	"\x06_titleB\n" +
 	"\n" +
 	"\b_contentB\x10\n" +
