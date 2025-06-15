@@ -76,7 +76,7 @@ message CreateSnippetRequest {
 }
 
 message CreateSnippetResponse {
-  string id = 1;
+  Snippet snippet = 1;
 }
 
 message GetSnippetRequest {

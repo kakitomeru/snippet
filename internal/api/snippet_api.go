@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/kakitomeru/shared/pagination"
@@ -49,13 +48,13 @@ func (h *SnippetServiceHandler) CreateSnippet(
 		tags = req.Tags
 	}
 
-	id, err := h.service.Snippet.Create(ctx, req.Title, req.Content, languageHint, isPublic, tags)
+	snippet, err := h.service.Snippet.Create(ctx, req.Title, req.Content, languageHint, isPublic, tags)
 	if err != nil {
 		return nil, s.StatusInternal
 	}
 
 	return &pb.CreateSnippetResponse{
-		Id: id.String(),
+		Snippet: converter.ToPbSnippet(snippet),
 	}, nil
 }
 
@@ -76,9 +75,9 @@ func (h *SnippetServiceHandler) GetSnippet(
 	if err != nil {
 		switch {
 		case errors.Is(err, repository.ErrSnippetNotFound):
-			return nil, status.Errorf(codes.NotFound, "snippet not found")
+			return nil, status.Errorf(codes.NotFound, "%s", err.Error())
 		case errors.Is(err, service.ErrSnippetIsPrivate):
-			return nil, status.Errorf(codes.PermissionDenied, "snippet is private")
+			return nil, status.Errorf(codes.PermissionDenied, "%s", err.Error())
 		default:
 			return nil, s.StatusInternal
 		}
@@ -185,44 +184,29 @@ func (h *SnippetServiceHandler) UpdateSnippet(
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id")
 	}
 
-	title := ""
-	if req.Title != nil {
-		title = *req.Title
+	snippet, err := h.service.Snippet.Update(
+		ctx,
+		id,
+		req.Title,
+		req.Content,
+		req.LanguageHint,
+		req.IsPublic,
+		req.Tags,
+		req.TagsUpdated,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, repository.ErrSnippetNotFound):
+			return nil, status.Errorf(codes.NotFound, "%s", err.Error())
+		case errors.Is(err, service.ErrSnippetNotOwned):
+			return nil, status.Errorf(codes.PermissionDenied, "%s", err.Error())
+		default:
+			return nil, s.StatusInternal
+		}
 	}
-
-	content := ""
-	if req.Content != nil {
-		content = *req.Content
-	}
-
-	languageHint := ""
-	if req.LanguageHint != nil {
-		languageHint = *req.LanguageHint
-	}
-
-	var isPublic *bool
-	if req.IsPublic != nil {
-		isPublic = req.IsPublic
-	}
-
-	var tags *[]string
-	if req.Tags != nil {
-		tags = &req.Tags
-	}
-
-	fmt.Println(title, content, languageHint, isPublic, tags, req.Tags)
-	fmt.Println("title", req.Title)
-	fmt.Println("content", req.Content)
-	fmt.Println("languageHint", req.LanguageHint)
-	fmt.Println("isPublic", req.IsPublic)
-	fmt.Println("tags", req.Tags)
-
-	// h.service.Snippet.Update(ctx, id, title, content, languageHint, isPublic, tags)
 
 	return &pb.UpdateSnippetResponse{
-		Snippet: &pb.Snippet{
-			Id: id.String(),
-		},
+		Snippet: converter.ToPbSnippet(snippet),
 	}, nil
 }
 
@@ -230,5 +214,26 @@ func (h *SnippetServiceHandler) DeleteSnippet(
 	ctx context.Context,
 	req *pb.DeleteSnippetRequest,
 ) (*emptypb.Empty, error) {
-	panic("not implemented")
+	if req.Id == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "id is required")
+	}
+
+	id, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid id")
+	}
+
+	err = h.service.Snippet.Delete(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, repository.ErrSnippetNotFound):
+			return nil, status.Errorf(codes.NotFound, "%s", err.Error())
+		case errors.Is(err, service.ErrSnippetNotOwned):
+			return nil, status.Errorf(codes.PermissionDenied, "%s", err.Error())
+		default:
+			return nil, s.StatusInternal
+		}
+	}
+
+	return &emptypb.Empty{}, nil
 }

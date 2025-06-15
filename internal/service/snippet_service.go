@@ -12,6 +12,7 @@ import (
 )
 
 var ErrSnippetIsPrivate = errors.New("snippet is private")
+var ErrSnippetNotOwned = errors.New("unauthorized snippet action")
 
 type SnippetService interface {
 	Create(
@@ -21,7 +22,7 @@ type SnippetService interface {
 		languageHint string,
 		isPublic bool,
 		tags []string,
-	) (*uuid.UUID, error)
+	) (*model.Snippet, error)
 	Get(
 		ctx context.Context,
 		id uuid.UUID,
@@ -36,7 +37,16 @@ type SnippetService interface {
 		ctx context.Context,
 		pagination pagination.Pagination,
 	) ([]*model.Snippet, int64, error)
-	Update(ctx context.Context, id uuid.UUID, snippet *model.Snippet) error
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		title *string,
+		content *string,
+		languageHint *string,
+		isPublic *bool,
+		tags []string,
+		tagsUpdated bool,
+	) (*model.Snippet, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -55,7 +65,7 @@ func (s *snippetService) Create(
 	languageHint string,
 	isPublic bool,
 	tags []string,
-) (*uuid.UUID, error) {
+) (*model.Snippet, error) {
 	userID := interceptor.GetUserID(ctx)
 
 	snippet := &model.Snippet{
@@ -67,12 +77,12 @@ func (s *snippetService) Create(
 		Tags:         tags,
 	}
 
-	id, err := s.repo.Snippet.Create(ctx, snippet)
+	snippet, err := s.repo.Snippet.Create(ctx, snippet)
 	if err != nil {
 		return nil, err
 	}
 
-	return id, nil
+	return snippet, nil
 }
 
 func (s *snippetService) Get(
@@ -146,11 +156,89 @@ func (s *snippetService) ListMine(
 func (s *snippetService) Update(
 	ctx context.Context,
 	id uuid.UUID,
-	snippet *model.Snippet,
-) error {
-	panic("not implemented")
+	title *string,
+	content *string,
+	languageHint *string,
+	isPublic *bool,
+	tags []string,
+	tagsUpdated bool,
+) (*model.Snippet, error) {
+	userID := interceptor.GetUserID(ctx)
+
+	snippet, err := s.repo.Snippet.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if snippet.OwnerID != userID {
+		return nil, ErrSnippetNotOwned
+	}
+
+	updatedSnippet := &model.Snippet{
+		OwnerID: snippet.OwnerID,
+	}
+	updatedSnippet.ID = snippet.ID
+	updatedSnippet.CreatedAt = snippet.CreatedAt
+	updatedSnippet.UpdatedAt = snippet.UpdatedAt
+
+	if title != nil {
+		updatedSnippet.Title = *title
+	} else {
+		updatedSnippet.Title = snippet.Title
+	}
+
+	if content != nil {
+		updatedSnippet.Content = *content
+	} else {
+		updatedSnippet.Content = snippet.Content
+	}
+
+	if languageHint != nil {
+		updatedSnippet.LanguageHint = *languageHint
+	} else {
+		updatedSnippet.LanguageHint = snippet.LanguageHint
+	}
+
+	if isPublic != nil {
+		updatedSnippet.IsPublic = *isPublic
+	} else {
+		updatedSnippet.IsPublic = snippet.IsPublic
+	}
+
+	if tagsUpdated {
+		updatedSnippet.Tags = tags
+	} else {
+		updatedSnippet.Tags = snippet.Tags
+	}
+
+	if snippet.Equal(updatedSnippet) {
+		return snippet, nil
+	}
+
+	updatedSnippet, err = s.repo.Snippet.Update(ctx, id, updatedSnippet)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedSnippet, nil
 }
 
 func (s *snippetService) Delete(ctx context.Context, id uuid.UUID) error {
-	panic("not implemented")
+	userID := interceptor.GetUserID(ctx)
+
+	snippet, err := s.repo.Snippet.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if snippet.OwnerID != userID {
+		return ErrSnippetNotOwned
+	}
+
+	err = s.repo.Snippet.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

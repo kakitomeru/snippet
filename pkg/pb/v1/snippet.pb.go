@@ -278,7 +278,7 @@ func (x *CreateSnippetRequest) GetTags() []string {
 
 type CreateSnippetResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Snippet       *Snippet               `protobuf:"bytes,1,opt,name=snippet,proto3" json:"snippet,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -313,11 +313,11 @@ func (*CreateSnippetResponse) Descriptor() ([]byte, []int) {
 	return file_v1_snippet_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreateSnippetResponse) GetId() string {
+func (x *CreateSnippetResponse) GetSnippet() *Snippet {
 	if x != nil {
-		return x.Id
+		return x.Snippet
 	}
-	return ""
+	return nil
 }
 
 type GetSnippetRequest struct {
@@ -845,9 +845,9 @@ const file_v1_snippet_proto_rawDesc = "" +
 	"\x04tags\x18\x05 \x03(\tR\x04tagsB\x10\n" +
 	"\x0e_language_hintB\f\n" +
 	"\n" +
-	"_is_public\"'\n" +
-	"\x15CreateSnippetResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"#\n" +
+	"_is_public\"F\n" +
+	"\x15CreateSnippetResponse\x12-\n" +
+	"\asnippet\x18\x01 \x01(\v2\x13.snippet.v1.SnippetR\asnippet\"#\n" +
 	"\x11GetSnippetRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"C\n" +
 	"\x12GetSnippetResponse\x12-\n" +
@@ -936,29 +936,30 @@ var file_v1_snippet_proto_goTypes = []any{
 var file_v1_snippet_proto_depIdxs = []int32{
 	13, // 0: snippet.v1.Snippet.created_at:type_name -> google.protobuf.Timestamp
 	13, // 1: snippet.v1.Snippet.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: snippet.v1.GetSnippetResponse.snippet:type_name -> snippet.v1.Snippet
-	0,  // 3: snippet.v1.ListMySnippetsResponse.snippets:type_name -> snippet.v1.Snippet
-	1,  // 4: snippet.v1.ListMySnippetsResponse.pagination:type_name -> snippet.v1.PaginationResponse
-	0,  // 5: snippet.v1.ListPublicSnippetsResponse.snippets:type_name -> snippet.v1.Snippet
-	1,  // 6: snippet.v1.ListPublicSnippetsResponse.pagination:type_name -> snippet.v1.PaginationResponse
-	0,  // 7: snippet.v1.UpdateSnippetResponse.snippet:type_name -> snippet.v1.Snippet
-	2,  // 8: snippet.v1.SnippetService.CreateSnippet:input_type -> snippet.v1.CreateSnippetRequest
-	4,  // 9: snippet.v1.SnippetService.GetSnippet:input_type -> snippet.v1.GetSnippetRequest
-	6,  // 10: snippet.v1.SnippetService.ListMySnippets:input_type -> snippet.v1.ListMySnippetsRequest
-	8,  // 11: snippet.v1.SnippetService.ListPublicSnippets:input_type -> snippet.v1.ListPublicSnippetsRequest
-	10, // 12: snippet.v1.SnippetService.UpdateSnippet:input_type -> snippet.v1.UpdateSnippetRequest
-	12, // 13: snippet.v1.SnippetService.DeleteSnippet:input_type -> snippet.v1.DeleteSnippetRequest
-	3,  // 14: snippet.v1.SnippetService.CreateSnippet:output_type -> snippet.v1.CreateSnippetResponse
-	5,  // 15: snippet.v1.SnippetService.GetSnippet:output_type -> snippet.v1.GetSnippetResponse
-	7,  // 16: snippet.v1.SnippetService.ListMySnippets:output_type -> snippet.v1.ListMySnippetsResponse
-	9,  // 17: snippet.v1.SnippetService.ListPublicSnippets:output_type -> snippet.v1.ListPublicSnippetsResponse
-	11, // 18: snippet.v1.SnippetService.UpdateSnippet:output_type -> snippet.v1.UpdateSnippetResponse
-	14, // 19: snippet.v1.SnippetService.DeleteSnippet:output_type -> google.protobuf.Empty
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 2: snippet.v1.CreateSnippetResponse.snippet:type_name -> snippet.v1.Snippet
+	0,  // 3: snippet.v1.GetSnippetResponse.snippet:type_name -> snippet.v1.Snippet
+	0,  // 4: snippet.v1.ListMySnippetsResponse.snippets:type_name -> snippet.v1.Snippet
+	1,  // 5: snippet.v1.ListMySnippetsResponse.pagination:type_name -> snippet.v1.PaginationResponse
+	0,  // 6: snippet.v1.ListPublicSnippetsResponse.snippets:type_name -> snippet.v1.Snippet
+	1,  // 7: snippet.v1.ListPublicSnippetsResponse.pagination:type_name -> snippet.v1.PaginationResponse
+	0,  // 8: snippet.v1.UpdateSnippetResponse.snippet:type_name -> snippet.v1.Snippet
+	2,  // 9: snippet.v1.SnippetService.CreateSnippet:input_type -> snippet.v1.CreateSnippetRequest
+	4,  // 10: snippet.v1.SnippetService.GetSnippet:input_type -> snippet.v1.GetSnippetRequest
+	6,  // 11: snippet.v1.SnippetService.ListMySnippets:input_type -> snippet.v1.ListMySnippetsRequest
+	8,  // 12: snippet.v1.SnippetService.ListPublicSnippets:input_type -> snippet.v1.ListPublicSnippetsRequest
+	10, // 13: snippet.v1.SnippetService.UpdateSnippet:input_type -> snippet.v1.UpdateSnippetRequest
+	12, // 14: snippet.v1.SnippetService.DeleteSnippet:input_type -> snippet.v1.DeleteSnippetRequest
+	3,  // 15: snippet.v1.SnippetService.CreateSnippet:output_type -> snippet.v1.CreateSnippetResponse
+	5,  // 16: snippet.v1.SnippetService.GetSnippet:output_type -> snippet.v1.GetSnippetResponse
+	7,  // 17: snippet.v1.SnippetService.ListMySnippets:output_type -> snippet.v1.ListMySnippetsResponse
+	9,  // 18: snippet.v1.SnippetService.ListPublicSnippets:output_type -> snippet.v1.ListPublicSnippetsResponse
+	11, // 19: snippet.v1.SnippetService.UpdateSnippet:output_type -> snippet.v1.UpdateSnippetResponse
+	14, // 20: snippet.v1.SnippetService.DeleteSnippet:output_type -> google.protobuf.Empty
+	15, // [15:21] is the sub-list for method output_type
+	9,  // [9:15] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_v1_snippet_proto_init() }

@@ -14,7 +14,7 @@ import (
 var ErrSnippetNotFound = errors.New("snippet not found")
 
 type SnippetRepository interface {
-	Create(ctx context.Context, snippet *model.Snippet) (*uuid.UUID, error)
+	Create(ctx context.Context, snippet *model.Snippet) (*model.Snippet, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Snippet, error)
 	ListPublic(
 		ctx context.Context,
@@ -35,7 +35,7 @@ type SnippetRepository interface {
 		ctx context.Context,
 		id uuid.UUID,
 		snippet *model.Snippet,
-	) error
+	) (*model.Snippet, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -50,7 +50,7 @@ func NewSnippetRepository(db *gorm.DB) *snippetRepository {
 func (r *snippetRepository) Create(
 	ctx context.Context,
 	snippet *model.Snippet,
-) (*uuid.UUID, error) {
+) (*model.Snippet, error) {
 	snippet.ID = uuid.New()
 	snippet.CreatedAt = time.Now()
 	snippet.UpdatedAt = time.Now()
@@ -59,7 +59,7 @@ func (r *snippetRepository) Create(
 		return nil, err
 	}
 
-	return &snippet.ID, nil
+	return snippet, nil
 }
 
 func (r *snippetRepository) GetByID(
@@ -180,10 +180,22 @@ func (r *snippetRepository) Update(
 	ctx context.Context,
 	id uuid.UUID,
 	snippet *model.Snippet,
-) error {
-	panic("not implemented")
+) (*model.Snippet, error) {
+	snippet.UpdatedAt = time.Now()
+
+	err := r.db.WithContext(ctx).Model(&model.Snippet{}).Where("id = ?", id).Updates(snippet).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return snippet, nil
 }
 
 func (r *snippetRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	panic("not implemented")
+	err := r.db.WithContext(ctx).Delete(&model.Snippet{}, "id = ?", id).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
