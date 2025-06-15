@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 
-	"github.com/kakitomeru/shared/config"
 	"github.com/kakitomeru/shared/database"
 	"github.com/kakitomeru/shared/env"
 	. "github.com/kakitomeru/snippet/internal/app"
+	"github.com/kakitomeru/snippet/internal/config"
 	"github.com/kakitomeru/snippet/internal/model"
 )
 
 func main() {
-	cfg, err := config.LoadSnippet()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("failed to load snippet config: %v", err)
 	}
@@ -26,12 +26,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	log.Println("Running migration..")
+	log.Println("Running migration for table snippet")
 	if err = database.Migrate(db, model.Snippet{}); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Println("Starting app...")
+	log.Println("Starting app")
 	app := NewApp(db, cfg)
 	ctx := context.Background()
 

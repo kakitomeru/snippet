@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/kakitomeru/shared/config"
 	"github.com/kakitomeru/shared/env"
 	"github.com/kakitomeru/shared/interceptor"
 	"github.com/kakitomeru/shared/telemetry"
 	"github.com/kakitomeru/snippet/internal/api"
+	"github.com/kakitomeru/snippet/internal/config"
 	"github.com/kakitomeru/snippet/internal/repository"
 	"github.com/kakitomeru/snippet/internal/service"
 	pb "github.com/kakitomeru/snippet/pkg/pb/v1"
@@ -23,12 +23,12 @@ import (
 
 type App struct {
 	db     *gorm.DB
-	cfg    *config.Snippet
+	cfg    *config.Config
 	port   string
 	server *grpc.Server
 }
 
-func NewApp(db *gorm.DB, cfg *config.Snippet) *App {
+func NewApp(db *gorm.DB, cfg *config.Config) *App {
 	return &App{
 		db:   db,
 		cfg:  cfg,

@@ -1,0 +1,5 @@
+name: "snippet"
+env:
+  - postgres
+  - otel
+  - snippet
