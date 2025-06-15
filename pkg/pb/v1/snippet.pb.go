@@ -517,6 +517,7 @@ type ListPublicSnippetsRequest struct {
 	Page          *int32                 `protobuf:"varint,1,opt,name=page,proto3,oneof" json:"page,omitempty"`
 	Size          *int32                 `protobuf:"varint,2,opt,name=size,proto3,oneof" json:"size,omitempty"`
 	OwnerId       *string                `protobuf:"bytes,3,opt,name=owner_id,json=ownerId,proto3,oneof" json:"owner_id,omitempty"`
+	ExcludeMine   *bool                  `protobuf:"varint,4,opt,name=exclude_mine,json=excludeMine,proto3,oneof" json:"exclude_mine,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -570,6 +571,13 @@ func (x *ListPublicSnippetsRequest) GetOwnerId() string {
 		return *x.OwnerId
 	}
 	return ""
+}
+
+func (x *ListPublicSnippetsRequest) GetExcludeMine() bool {
+	if x != nil && x.ExcludeMine != nil {
+		return *x.ExcludeMine
+	}
+	return false
 }
 
 type ListPublicSnippetsResponse struct {
@@ -845,14 +853,16 @@ const file_v1_snippet_proto_rawDesc = "" +
 	"\bsnippets\x18\x01 \x03(\v2\x13.snippet.v1.SnippetR\bsnippets\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.snippet.v1.PaginationResponseR\n" +
-	"pagination\"\x8c\x01\n" +
+	"pagination\"\xc5\x01\n" +
 	"\x19ListPublicSnippetsRequest\x12\x17\n" +
 	"\x04page\x18\x01 \x01(\x05H\x00R\x04page\x88\x01\x01\x12\x17\n" +
 	"\x04size\x18\x02 \x01(\x05H\x01R\x04size\x88\x01\x01\x12\x1e\n" +
-	"\bowner_id\x18\x03 \x01(\tH\x02R\aownerId\x88\x01\x01B\a\n" +
+	"\bowner_id\x18\x03 \x01(\tH\x02R\aownerId\x88\x01\x01\x12&\n" +
+	"\fexclude_mine\x18\x04 \x01(\bH\x03R\vexcludeMine\x88\x01\x01B\a\n" +
 	"\x05_pageB\a\n" +
 	"\x05_sizeB\v\n" +
-	"\t_owner_id\"\x8d\x01\n" +
+	"\t_owner_idB\x0f\n" +
+	"\r_exclude_mine\"\x8d\x01\n" +
 	"\x1aListPublicSnippetsResponse\x12/\n" +
 	"\bsnippets\x18\x01 \x03(\v2\x13.snippet.v1.SnippetR\bsnippets\x12>\n" +
 	"\n" +

@@ -101,6 +101,7 @@ message ListPublicSnippetsRequest {
   optional int32 page = 1;
   optional int32 size = 2;
   optional string owner_id = 3;
+  optional bool exclude_mine = 4;
 }
 
 message ListPublicSnippetsResponse {

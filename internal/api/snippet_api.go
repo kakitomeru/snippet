@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/kakitomeru/shared/pagination"
@@ -77,6 +76,8 @@ func (h *SnippetServiceHandler) GetSnippet(
 		switch {
 		case errors.Is(err, repository.ErrSnippetNotFound):
 			return nil, status.Errorf(codes.NotFound, "snippet not found")
+		case errors.Is(err, service.ErrSnippetIsPrivate):
+			return nil, status.Errorf(codes.PermissionDenied, "snippet is private")
 		default:
 			return nil, s.StatusInternal
 		}
@@ -92,12 +93,12 @@ func (h *SnippetServiceHandler) ListMySnippets(
 	req *pb.ListMySnippetsRequest,
 ) (*pb.ListMySnippetsResponse, error) {
 	page := 1
-	if req.Page != nil {
+	if req.Page != nil && *req.Page > 0 {
 		page = int(*req.Page)
 	}
 
 	size := 10
-	if req.Size != nil {
+	if req.Size != nil && *req.Size > 0 && *req.Size <= 50 {
 		size = int(*req.Size)
 	}
 
@@ -125,8 +126,45 @@ func (h *SnippetServiceHandler) ListPublicSnippets(
 	ctx context.Context,
 	req *pb.ListPublicSnippetsRequest,
 ) (*pb.ListPublicSnippetsResponse, error) {
-	fmt.Println("ListPublicSnippets")
-	panic("not implemented")
+	page := 1
+	if req.Page != nil && *req.Page > 0 {
+		page = int(*req.Page)
+	}
+
+	size := 10
+	if req.Size != nil && *req.Size > 0 && *req.Size <= 50 {
+		size = int(*req.Size)
+	}
+
+	pagination := pagination.Pagination{
+		Page: page,
+		Size: size,
+	}
+
+	excludeMine := false
+	if req.ExcludeMine != nil {
+		excludeMine = *req.ExcludeMine
+	}
+
+	ownerID := ""
+	if req.OwnerId != nil {
+		ownerID = *req.OwnerId
+	}
+
+	snippets, total, err := h.service.Snippet.List(ctx, pagination, ownerID, excludeMine)
+	if err != nil {
+		return nil, s.StatusInternal
+	}
+
+	snippetsPb := make([]*pb.Snippet, len(snippets))
+	for i, snippet := range snippets {
+		snippetsPb[i] = converter.ToPbSnippet(snippet)
+	}
+
+	return &pb.ListPublicSnippetsResponse{
+		Snippets:   snippetsPb,
+		Pagination: converter.ToPbPagination(pagination, total),
+	}, nil
 }
 
 func (h *SnippetServiceHandler) UpdateSnippet(

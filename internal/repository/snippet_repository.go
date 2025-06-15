@@ -15,15 +15,21 @@ var ErrSnippetNotFound = errors.New("snippet not found")
 
 type SnippetRepository interface {
 	Create(ctx context.Context, snippet *model.Snippet) (*uuid.UUID, error)
-	GetByID(
+	GetByID(ctx context.Context, id uuid.UUID) (*model.Snippet, error)
+	List(
 		ctx context.Context,
-		id uuid.UUID,
-	) (*model.Snippet, error)
-	List(ctx context.Context, pagination pagination.Pagination) ([]*model.Snippet, error)
+		pagination pagination.Pagination,
+	) ([]*model.Snippet, int64, error)
+	ListExcludeOwnerID(
+		ctx context.Context,
+		pagination pagination.Pagination,
+		userID uuid.UUID,
+	) ([]*model.Snippet, int64, error)
 	ListByOwnerID(
 		ctx context.Context,
 		ownerID uuid.UUID,
 		pagination pagination.Pagination,
+		excludePrivate bool,
 	) ([]*model.Snippet, int64, error)
 	Update(
 		ctx context.Context,
@@ -75,21 +81,13 @@ func (r *snippetRepository) GetByID(
 func (r *snippetRepository) List(
 	ctx context.Context,
 	pagination pagination.Pagination,
-) ([]*model.Snippet, error) {
-	panic("not implemented")
-}
-
-func (r *snippetRepository) ListByOwnerID(
-	ctx context.Context,
-	ownerID uuid.UUID,
-	pagination pagination.Pagination,
 ) ([]*model.Snippet, int64, error) {
 	var total int64
 
 	err := r.db.
 		WithContext(ctx).
 		Model(&model.Snippet{}).
-		Where("owner_id = ?", ownerID).
+		Where("is_public = true").
 		Count(&total).Error
 	if err != nil {
 		return nil, total, err
@@ -98,13 +96,81 @@ func (r *snippetRepository) ListByOwnerID(
 	var snippets []*model.Snippet
 	err = r.db.
 		WithContext(ctx).
-		Where("owner_id = ?", ownerID).
+		Where("is_public = true").
 		Order("created_at DESC").
 		Offset((pagination.Page - 1) * pagination.Size).
 		Limit(pagination.Size).
 		Find(&snippets).Error
 	if err != nil {
 		return nil, total, err
+	}
+
+	return snippets, total, nil
+}
+
+func (r *snippetRepository) ListExcludeOwnerID(
+	ctx context.Context,
+	pagination pagination.Pagination,
+	userID uuid.UUID,
+) ([]*model.Snippet, int64, error) {
+	var total int64
+
+	err := r.db.
+		WithContext(ctx).
+		Model(&model.Snippet{}).
+		Where("is_public = true AND owner_id != ?", userID).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var snippets []*model.Snippet
+	err = r.db.
+		WithContext(ctx).
+		Where("is_public = true AND owner_id != ?", userID).
+		Order("created_at DESC").
+		Offset((pagination.Page - 1) * pagination.Size).
+		Limit(pagination.Size).
+		Find(&snippets).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return snippets, total, nil
+}
+
+func (r *snippetRepository) ListByOwnerID(
+	ctx context.Context,
+	ownerID uuid.UUID,
+	pagination pagination.Pagination,
+	excludePrivate bool,
+) ([]*model.Snippet, int64, error) {
+	var total int64
+
+	query := "owner_id = ?"
+	if excludePrivate {
+		query += " AND is_public = true"
+	}
+
+	err := r.db.
+		WithContext(ctx).
+		Model(&model.Snippet{}).
+		Where(query, ownerID).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var snippets []*model.Snippet
+	err = r.db.
+		WithContext(ctx).
+		Where(query, ownerID).
+		Order("created_at DESC").
+		Offset((pagination.Page - 1) * pagination.Size).
+		Limit(pagination.Size).
+		Find(&snippets).Error
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return snippets, total, nil
