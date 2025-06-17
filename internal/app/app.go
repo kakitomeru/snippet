@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -49,7 +50,6 @@ func (a *App) Start(ctx context.Context) {
 	defer func() {
 		if err := shutdownTracer(ctx); err != nil {
 			logger.Error(ctx, "failed to shutdown tracer provider", err)
-			os.Exit(1)
 		}
 	}()
 
@@ -61,7 +61,6 @@ func (a *App) Start(ctx context.Context) {
 	defer func() {
 		if err := shutdownMeter(ctx); err != nil {
 			logger.Error(ctx, "failed to shutdown meter provider", err)
-			os.Exit(1)
 		}
 	}()
 	// metric.Init()
@@ -108,8 +107,10 @@ func (a *App) GracefulShutdown(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
+		fmt.Println()
 		logger.Debug(ctx, "Shutdown requested via context")
 	case <-quit:
+		fmt.Println()
 		logger.Debug(ctx, "Shutdown requested via signal")
 	}
 
