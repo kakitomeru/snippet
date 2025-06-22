@@ -9,6 +9,7 @@ import (
 	"github.com/kakitomeru/shared/pagination"
 	"github.com/kakitomeru/snippet/internal/model"
 	"github.com/kakitomeru/snippet/internal/repository"
+	"github.com/lib/pq"
 )
 
 var ErrSnippetIsPrivate = errors.New("snippet is private")
@@ -174,48 +175,75 @@ func (s *snippetService) Update(
 		return nil, ErrSnippetNotOwned
 	}
 
-	updatedSnippet := &model.Snippet{
-		OwnerID: snippet.OwnerID,
-	}
-	updatedSnippet.ID = snippet.ID
-	updatedSnippet.CreatedAt = snippet.CreatedAt
-	updatedSnippet.UpdatedAt = snippet.UpdatedAt
+	params := make(map[string]any)
 
 	if title != nil {
-		updatedSnippet.Title = *title
-	} else {
-		updatedSnippet.Title = snippet.Title
+		params["title"] = *title
 	}
 
 	if content != nil {
-		updatedSnippet.Content = *content
-	} else {
-		updatedSnippet.Content = snippet.Content
+		params["content"] = *content
 	}
 
 	if languageHint != nil {
-		updatedSnippet.LanguageHint = *languageHint
-	} else {
-		updatedSnippet.LanguageHint = snippet.LanguageHint
+		params["language_hint"] = *languageHint
 	}
 
 	if isPublic != nil {
-		updatedSnippet.IsPublic = *isPublic
-	} else {
-		updatedSnippet.IsPublic = snippet.IsPublic
+		params["is_public"] = *isPublic
 	}
 
 	if tagsUpdated {
-		updatedSnippet.Tags = tags
-	} else {
-		updatedSnippet.Tags = snippet.Tags
+		params["tags"] = pq.StringArray(tags)
 	}
 
-	if snippet.Equal(updatedSnippet) {
-		return snippet, nil
-	}
+	// updatedSnippet := &model.Snippet{
+	// 	OwnerID: snippet.OwnerID,
+	// }
+	// updatedSnippet.ID = snippet.ID
+	// updatedSnippet.CreatedAt = snippet.CreatedAt
+	// updatedSnippet.UpdatedAt = snippet.UpdatedAt
 
-	updatedSnippet, err = s.repo.Snippet.Update(ctx, id, updatedSnippet)
+	// if title != nil {
+	// 	updatedSnippet.Title = *title
+	// } else {
+	// 	updatedSnippet.Title = snippet.Title
+	// }
+
+	// if content != nil {
+	// 	updatedSnippet.Content = *content
+	// } else {
+	// 	updatedSnippet.Content = snippet.Content
+	// }
+
+	// if languageHint != nil {
+	// 	updatedSnippet.LanguageHint = *languageHint
+	// } else {
+	// 	updatedSnippet.LanguageHint = snippet.LanguageHint
+	// }
+
+	// if isPublic != nil {
+	// 	updatedSnippet.IsPublic = *isPublic
+	// } else {
+	// 	updatedSnippet.IsPublic = snippet.IsPublic
+	// }
+
+	// if tagsUpdated {
+	// 	updatedSnippet.Tags = tags
+	// } else {
+	// 	updatedSnippet.Tags = snippet.Tags
+	// }
+
+	// if snippet.Equal(updatedSnippet) {
+	// 	return snippet, nil
+	// }
+
+	// updatedSnippet, err = s.repo.Snippet.Update(ctx, id, updatedSnippet)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	updatedSnippet, err := s.repo.Snippet.Update(ctx, snippet, params)
 	if err != nil {
 		return nil, err
 	}

@@ -184,6 +184,13 @@ func (h *SnippetServiceHandler) UpdateSnippet(
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id")
 	}
 
+	var tags []string
+	var tagsUpdated bool
+	if req.Tags != nil {
+		tags = req.Tags.Content
+		tagsUpdated = true
+	}
+
 	snippet, err := h.service.Snippet.Update(
 		ctx,
 		id,
@@ -191,8 +198,8 @@ func (h *SnippetServiceHandler) UpdateSnippet(
 		req.Content,
 		req.LanguageHint,
 		req.IsPublic,
-		req.Tags,
-		req.TagsUpdated,
+		tags,
+		tagsUpdated,
 	)
 	if err != nil {
 		switch {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	auth "github.com/kakitomeru/auth/pkg/model"
 	"github.com/kakitomeru/shared/model"
 	"github.com/lib/pq"
 )
@@ -15,6 +16,8 @@ type Snippet struct {
 	IsPublic     bool           `gorm:"not null;default:false"`
 	Tags         pq.StringArray `gorm:"type:text[]"`
 	OwnerID      uuid.UUID      `gorm:"not null"`
+
+	Owner auth.User `gorm:"foreignKey:OwnerID"`
 }
 
 func (a *Snippet) Equal(b *Snippet) bool {

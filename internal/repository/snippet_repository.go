@@ -33,8 +33,8 @@ type SnippetRepository interface {
 	) ([]*model.Snippet, int64, error)
 	Update(
 		ctx context.Context,
-		id uuid.UUID,
 		snippet *model.Snippet,
+		params map[string]any,
 	) (*model.Snippet, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -55,11 +55,16 @@ func (r *snippetRepository) Create(
 	snippet.CreatedAt = time.Now()
 	snippet.UpdatedAt = time.Now()
 
-	if err := r.db.Create(snippet).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(snippet).Error; err != nil {
 		return nil, err
 	}
 
-	return snippet, nil
+	var createdSnippet model.Snippet
+	if err := r.db.WithContext(ctx).Preload("Owner").First(&createdSnippet, "id = ?", snippet.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return &createdSnippet, nil
 }
 
 func (r *snippetRepository) GetByID(
@@ -67,7 +72,7 @@ func (r *snippetRepository) GetByID(
 	id uuid.UUID,
 ) (*model.Snippet, error) {
 	var snippet model.Snippet
-	if err := r.db.WithContext(ctx).First(&snippet, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Owner").First(&snippet, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrSnippetNotFound
 		}
@@ -96,6 +101,7 @@ func (r *snippetRepository) ListPublic(
 	var snippets []*model.Snippet
 	err = r.db.
 		WithContext(ctx).
+		Preload("Owner").
 		Where("is_public = true").
 		Order("created_at DESC").
 		Offset((pagination.Page - 1) * pagination.Size).
@@ -127,6 +133,7 @@ func (r *snippetRepository) ListPublicExcludeOwnerID(
 	var snippets []*model.Snippet
 	err = r.db.
 		WithContext(ctx).
+		Preload("Owner").
 		Where("is_public = true AND owner_id != ?", userID).
 		Order("created_at DESC").
 		Offset((pagination.Page - 1) * pagination.Size).
@@ -164,6 +171,7 @@ func (r *snippetRepository) ListByOwnerID(
 	var snippets []*model.Snippet
 	err = r.db.
 		WithContext(ctx).
+		Preload("Owner").
 		Where(query, ownerID).
 		Order("created_at DESC").
 		Offset((pagination.Page - 1) * pagination.Size).
@@ -178,17 +186,23 @@ func (r *snippetRepository) ListByOwnerID(
 
 func (r *snippetRepository) Update(
 	ctx context.Context,
-	id uuid.UUID,
 	snippet *model.Snippet,
+	params map[string]any,
 ) (*model.Snippet, error) {
 	snippet.UpdatedAt = time.Now()
 
-	err := r.db.WithContext(ctx).Model(&model.Snippet{}).Where("id = ?", id).Updates(snippet).Error
+	err := r.db.WithContext(ctx).Model(snippet).Updates(params).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return snippet, nil
+	var updatedSnippet model.Snippet
+	err = r.db.WithContext(ctx).Preload("Owner").First(&updatedSnippet, "id = ?", snippet.ID).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedSnippet, nil
 }
 
 func (r *snippetRepository) Delete(ctx context.Context, id uuid.UUID) error {
